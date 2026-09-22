@@ -3,43 +3,52 @@ import axiosInstance from '@/plugins/axios';
 
 export const useDoctorStore = defineStore('doctorStore', {
   state: () => ({
-    doctors: [],
+    doctors: [] as any[],
   }),
   actions: {
     async fetchDoctors() {
       try {
-        const { data } = await axiosInstance.get('/doctors/list');
-        console.log(data);
-        this.doctors = data.data;
+        const { data } = await axiosInstance.get('/doctors');
+        this.doctors = data;
       } catch (e) {
         console.log(e);
       }
     },
-    async deleteDoctor(doctorId:any) {
+    async createDoctor(doctor: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      password: string;
+      phone?: string;
+      response?: string;
+      hospitalId: number;
+    }) {
       try {
-        const { data } = await axiosInstance.delete(`/doctors/delete/${doctorId}`);
-        console.log(data.data);
-        
+        const { data } = await axiosInstance.post('/doctors', doctor);
+        return data;
+      } catch (e) {
+        console.error(e);
+        throw e;
+      }
+    },
+    async deleteDoctor(doctorId: any) {
+      try {
+        const { data } = await axiosInstance.delete(`/doctors/${doctorId}`);
+        console.log(data);
       } catch (e) {
         console.error(e);
       }
     },
-    async updateDoctor(doctorId: any, updatedData: { name: string; email: string; profile: File }) {
+    async updateDoctor(
+      doctorId: any,
+      updatedData: { firstName?: string; lastName?: string; phone?: string; response?: string },
+    ) {
       try {
-        const formData = new FormData();
-        formData.append('name', updatedData.name);
-        formData.append('email', updatedData.email);
-        // formData.append('profile', updatedData.profile);
-
-        const { data } = await axiosInstance.put(`/doctors/update/${doctorId}`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        console.log(data.data);
+        const { data } = await axiosInstance.put(`/doctors/${doctorId}`, updatedData);
+        return data;
       } catch (e) {
         console.error(e);
+        throw e; // the dialog shows the failure instead of claiming success
       }
     },
   },

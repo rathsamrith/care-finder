@@ -1,0 +1,691 @@
+// Care Finder API - Prisma schema
+//
+// Modeled from the existing Laravel/MySQL schema in ../../database/migrations.
+// Column/table names are @@map / @map'd to match the existing MySQL columns
+// exactly, so migrating data off the current database is a straight copy -
+// no transformation needed. Structural cleanups vs. the original are called
+// out inline with `// IMPROVEMENT:` comments; see MIGRATION_ROADMAP.md for
+// the full rationale.
+//
+// Excluded on purpose (out of scope - see plan): `mailsettings` (admin-only),
+// `frontusers` (dead/legacy guard, no evidence of use from the API).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Identity & auth
+// ---------------------------------------------------------------------------
+
+enum Gender {
+  male
+  female
+}
+
+model User {
+  id              BigInt    @id @default(autoincrement())
+  firstName       String?   @map("first_name")
+  lastName        String?   @map("last_name")
+  name            String?
+  email           String    @unique
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  dateOfBirth     DateTime? @map("date_of_birth") @db.Date
+  gender          Gender?
+  password        String
+  phone           String?
+  profile         String?
+  verifyStatus    Boolean   @default(false) @map("verify_status")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // IMPROVEMENT: spatie/laravel-permission's role/permission pivots are
+  // polymorphic (model_id + model_type) even though User is the only
+  // roleable/permissionable model in this app. Modeled as direct FKs here -
+  // simpler, and a real FK constraint the original schema didn't have.
+  roles       UserRole[]
+  permissions UserPermission[]
+
+  hospitals          Hospital[]
+  organizationMemberships OrganizationMember[]
+  organizationInvitesSent OrganizationInvite[] @relation("InvitesSent")
+  doctor              Doctor?
+  appointments        Appointment[]
+  rates               Rate[]
+  favourites          Favourite[]
+  posts               Post[]
+  systemRequests      SystemRequest[]
+  addresses           UserAddress[]
+  subscribePayments   SubscribePayment[]
+  notificationsReceived AppointmentNotification[] @relation("NotificationReceiver")
+  notificationsSent     AppointmentNotification[] @relation("NotificationSender")
+
+  @@map("users")
+}
+
+// IMPROVEMENT: mirrors Laravel's custom password_resets flow (not the
+// built-in Password broker) - email is the natural key, same as the
+// original migration (no surrogate id column there either).
+model PasswordReset {
+  email     String   @id
+  token     String
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_resets")
+}
+
+model Role {
+  id        BigInt   @id @default(autoincrement())
+  name      String
+  guardName String   @default("api") @map("guard_name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users       UserRole[]
+  permissions RoleHasPermission[]
+
+  @@unique([name, guardName])
+  @@map("roles")
+}
+
+// IMPROVEMENT: dropped the non-standard `front_name` column from the
+// original `permissions` migration - nothing in the API/admin controllers
+// reads it. Flagged for a quick confirmation before this ships; trivial to
+// restore if something depends on it.
+model Permission {
+  id        BigInt   @id @default(autoincrement())
+  name      String
+  guardName String   @default("api") @map("guard_name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users UserPermission[]
+  roles RoleHasPermission[]
+
+  @@unique([name, guardName])
+  @@map("permissions")
+}
+
+model UserRole {
+  userId BigInt @map("user_id")
+  roleId BigInt @map("role_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("model_has_roles")
+}
+
+model UserPermission {
+  userId       BigInt @map("user_id")
+  permissionId BigInt @map("permission_id")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, permissionId])
+  @@map("model_has_permissions")
+}
+
+model RoleHasPermission {
+  roleId       BigInt @map("role_id")
+  permissionId BigInt @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_has_permissions")
+}
+
+// ---------------------------------------------------------------------------
+// Hospitals
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          BigInt   @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  hospitals Hospital[]
+
+  @@map("categories")
+}
+
+model Hospital {
+  id            BigInt    @id @default(autoincrement())
+  coverImage    String?   @map("cover_image")
+  // Public subdomain label (slug.<root domain>). Null until the hospital
+  // claims one in the site editor; see modules/sites/site-catalog.ts for rules.
+  slug          String?   @unique
+  logo          String?
+  name          String
+  userId        BigInt    @map("user_id")
+  categoryId    BigInt    @map("category_id")
+  openTime      DateTime? @map("open_time") @db.Time()
+  closeTime     DateTime? @map("close_time") @db.Time()
+  mission       String?   @db.Text
+  vision        String?   @db.Text
+  phoneNumber   String?   @map("phone_number")
+  streetAddress String?   @map("street_address")
+  village       String?
+  commune       String?
+  district      String?
+  province      String?
+  latitude      String?
+  longitude     String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  owner       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  doctors     Doctor[]
+  departments Department[]
+  rooms       Room[]
+  rates       Rate[]
+  favourites  Favourite[]
+  appointments Appointment[]
+  previewImages PreviewImage[]
+  promotions  HospitalPromotion[]
+  services    HospitalService[]
+  rateReplies RateReply[]
+  site        HospitalSite?
+  kiosks      Kiosk[]
+
+  // Who may manage this hospital: members of its organization (see
+  // core/access/hospital-access.ts). `userId` stays as the creator/primary
+  // owner and always counts as Owner until phase 2 of multi-hospital support.
+  organizationId BigInt?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("hospitals")
+}
+
+enum OrganizationRole {
+  Owner
+  Admin
+  Manager
+}
+
+// A hospital group (or a single hospital's own account). Hospitals belong to
+// one organization; people are members of it with a role.
+model Organization {
+  id        BigInt   @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members   OrganizationMember[]
+  hospitals Hospital[]
+  invites   OrganizationInvite[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             BigInt           @id @default(autoincrement())
+  organizationId BigInt           @map("organization_id")
+  userId         BigInt           @map("user_id")
+  role           OrganizationRole @default(Manager)
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@map("organization_members")
+}
+
+// Email invitation to join an organization. Only the SHA-256 of the emailed
+// token is stored. Single use (acceptedAt), expires, and can only be accepted
+// by an account whose email matches `email`. Never grants Owner.
+model OrganizationInvite {
+  id             BigInt           @id @default(autoincrement())
+  organizationId BigInt           @map("organization_id")
+  email          String
+  role           OrganizationRole @default(Manager)
+  tokenHash      String           @unique @map("token_hash")
+  invitedById    BigInt?          @map("invited_by_id")
+  expiresAt      DateTime         @map("expires_at")
+  acceptedAt     DateTime?        @map("accepted_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User?        @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("organization_invites")
+}
+
+// Presentation config for a hospital's subdomain website. `theme` and
+// `sections` are JSON but always written through sanitizeSiteConfig()
+// (modules/sites/site-config.util.ts) - never raw client input.
+model HospitalSite {
+  id             BigInt   @id @default(autoincrement())
+  hospitalId     BigInt   @unique @map("hospital_id")
+  template       String   @default("classic")
+  theme          Json
+  sections       Json
+  heroImage      String?  @map("hero_image")
+  heroTitle      String?  @map("hero_title")
+  heroSubtitle   String?  @map("hero_subtitle")
+  seoTitle       String?  @map("seo_title")
+  seoDescription String?  @map("seo_description")
+  published      Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@map("hospital_sites")
+}
+
+model Doctor {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt   @unique @map("user_id")
+  hospitalId BigInt   @map("hospital_id")
+  response   String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospital     Hospital         @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  schedule     DoctorSchedule[]
+
+  @@index([hospitalId])
+  @@map("doctors")
+}
+
+// Weekly working hours. weekday: 0 = Sunday ... 6 = Saturday; a day may have
+// several intervals (e.g. a lunch break). A doctor with no rows follows the
+// hospital's opening hours; once any row exists, days without rows are days off.
+// Logic lives in modules/doctors/schedule.util.ts.
+model DoctorSchedule {
+  id        BigInt   @id @default(autoincrement())
+  doctorId  BigInt   @map("doctor_id")
+  weekday   Int      @db.TinyInt
+  startTime DateTime @map("start_time") @db.Time()
+  endTime   DateTime @map("end_time") @db.Time()
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, weekday, startTime])
+  @@map("doctor_schedules")
+}
+
+model Department {
+  id         BigInt   @id @default(autoincrement())
+  hospitalId BigInt   @map("hospital_id")
+  image      String?
+  name       String
+  details    String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId])
+  @@map("departments")
+}
+
+model Room {
+  id            BigInt   @id @default(autoincrement())
+  name          String
+  numberOfBed   Int      @default(0) @map("number_of_bed")
+  hospitalId    BigInt   @map("hospital_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  hospital     Hospital      @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  // IMPROVEMENT: fixes the Eloquent model's `apppointments()` typo.
+  appointments Appointment[]
+
+  @@index([hospitalId])
+  @@map("rooms")
+}
+
+// ---------------------------------------------------------------------------
+// Appointments
+// ---------------------------------------------------------------------------
+
+// IMPROVEMENT: one shared enum reused across status/hospital_status/
+// doctor_status instead of three independently-declared inline MySQL enums.
+// Pending -> Confirmed (hospital + doctor accepted) -> Arrived (checked in) -> Completed.
+// Missing = no-show (set automatically). Canceled/Rejected end it early.
+enum AppointmentStatus {
+  Pending
+  Canceled
+  Missing
+  Confirmed
+  Rejected
+  Arrived
+  Completed
+}
+
+model Appointment {
+  id              BigInt            @id @default(autoincrement())
+  title           String            @db.Text
+  userId          BigInt            @map("user_id")
+  hospitalId      BigInt            @map("hospital_id")
+  doctorId        BigInt            @map("doctor_id")
+  // IMPROVEMENT: real FK (the original migration left room_id as a bare
+  // bigint with no DB-level constraint despite the app relation existing).
+  roomId          BigInt?           @map("room_id")
+  appointmentDate DateTime          @map("appointment_date") @db.Date
+  appointmentTime DateTime          @map("appointment_time") @db.Time()
+  // IMPROVEMENT: the Eloquent model's fillable listed `appointment_end` but
+  // the migration never defined it - added as a real column here (confirm
+  // with product whether it's actually needed before backfilling).
+  appointmentEnd  DateTime?         @map("appointment_end") @db.Time()
+  status          AppointmentStatus @default(Pending)
+  hospitalStatus  AppointmentStatus @default(Pending) @map("hospital_status")
+  doctorStatus    AppointmentStatus @default(Pending) @map("doctor_status")
+  // Set when the pre-appointment reminder email was sent (see
+  // appointment-reminders.service.ts); null = not sent yet.
+  reminderSentAt  DateTime?         @map("reminder_sent_at")
+
+  // Check-in (see modules/appointments/check-in.service.ts). queueNumber counts
+  // up per hospital per day across all kiosks/methods; queuePrefix is the
+  // letter of the kiosk ("B") or P = phone, R = reception, shown as "B-14".
+  checkedInAt     DateTime?         @map("checked_in_at")
+  checkInMethod   String?           @map("check_in_method") @db.VarChar(10)
+  queueNumber     Int?              @map("queue_number")
+  queuePrefix     String?           @map("queue_prefix") @db.VarChar(3)
+  completedAt     DateTime?         @map("completed_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  user          User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospital      Hospital                   @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  doctor        Doctor                     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  room          Room?                      @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  notifications AppointmentNotification[]
+
+  @@index([userId])
+  @@index([hospitalId])
+  @@index([doctorId])
+  @@index([appointmentDate])
+  @@unique([hospitalId, appointmentDate, queueNumber])
+  @@map("appointments")
+}
+
+enum NotificationType {
+  Appointment_Cancel       @map("Appointment Cancel")
+  New_Appointment_Added    @map("New Appointment Added")
+  Appointment_Accepted     @map("Appointment Accepted")
+  Appointment_Rejected     @map("Appointment Rejected")
+  Patient_Arrived          @map("Patient Arrived")
+}
+
+model AppointmentNotification {
+  id            BigInt           @id @default(autoincrement())
+  userId        BigInt           @map("user_id")
+  appointmentId BigInt           @map("appointment_id")
+  fromUserId    BigInt           @map("from")
+  type          NotificationType @default(New_Appointment_Added)
+  message       String?          @db.Text
+  isRead        Boolean          @default(false) @map("is_read")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  user        User        @relation("NotificationReceiver", fields: [userId], references: [id], onDelete: Cascade)
+  fromUser    User        @relation("NotificationSender", fields: [fromUserId], references: [id], onDelete: Cascade)
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([appointmentId])
+  @@map("appointment_notifications")
+}
+
+// ---------------------------------------------------------------------------
+// Feedback
+// ---------------------------------------------------------------------------
+
+model Rate {
+  id         BigInt   @id @default(autoincrement())
+  hospitalId BigInt   @map("hospital_id")
+  userId     BigInt   @map("user_id")
+  content    String?  @db.Text
+  star       Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  hospital Hospital    @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies  RateReply[]
+
+  @@index([hospitalId])
+  @@map("rates")
+}
+
+model RateReply {
+  id         BigInt   @id @default(autoincrement())
+  rateId     BigInt   @map("rate_id")
+  hospitalId BigInt   @map("hospital_id")
+  content    String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  rate     Rate     @relation(fields: [rateId], references: [id], onDelete: Cascade)
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([rateId])
+  @@map("rate_replies")
+}
+
+model PreviewImage {
+  id         BigInt   @id @default(autoincrement())
+  hospitalId BigInt   @map("hospital_id")
+  imageName  String   @map("image_name")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId])
+  @@map("preview_images")
+}
+
+model Favourite {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt   @map("user_id")
+  hospitalId BigInt   @map("hospital_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, hospitalId])
+  @@map("favourites")
+}
+
+model HospitalPromotion {
+  id          BigInt   @id @default(autoincrement())
+  hospitalId  BigInt   @map("hospital_id")
+  title       String
+  image       String?
+  description String   @db.Text
+  startDate   DateTime @map("start_date") @db.Date
+  endDate     DateTime @map("end_date") @db.Date
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId])
+  @@map("hospital_promotions")
+}
+
+model HospitalService {
+  id          BigInt   @id @default(autoincrement())
+  hospitalId  BigInt   @map("hospital_id")
+  name        String
+  image       String?
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId])
+  @@map("hospital_services")
+}
+
+// ---------------------------------------------------------------------------
+// Subscriptions / payments
+// ---------------------------------------------------------------------------
+
+model SubscribePlan {
+  id        BigInt   @id @default(autoincrement())
+  name      String
+  price     Float    @db.Float
+  currency  String
+  duration  Int?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  payments SubscribePayment[]
+
+  @@map("subscribe_plans")
+}
+
+model SubscribePayment {
+  id              BigInt   @id @default(autoincrement())
+  paymentId       String   @map("payment_id")
+  userId          BigInt   @map("user_id")
+  subscribePlanId BigInt   @map("subscribe_plan_id")
+  name            String
+  // IMPROVEMENT: the controller already writes these two fields; the
+  // original migration never defined them, so they were silently dropped.
+  // Added as real columns (singular `payment_type`, matching the model's
+  // other singular column names, fixing the controller's `payment_types`
+  // typo along the way).
+  paymentMethod   String?  @map("payment_method")
+  paymentType     String?  @map("payment_type")
+  payerEmail      String?  @map("payer_email")
+  amount          Float    @db.Float
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscribePlan SubscribePlan @relation(fields: [subscribePlanId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("subscribe_payments")
+}
+
+// ---------------------------------------------------------------------------
+// Misc
+// ---------------------------------------------------------------------------
+
+model Post {
+  id          BigInt   @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  userId      BigInt   @map("user_id")
+  publish     Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+model UserAddress {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  village   String?
+  commune   String?
+  district  String?
+  province  String?
+  latitude  String?
+  longitude String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_addresses")
+}
+
+// New table - no Laravel equivalent exists (the original app had no public
+// contact-form endpoint at all; the frontend's Contact page submit button
+// did nothing). Kept intentionally minimal: just enough to store an inbound
+// message for an admin to read later, no reply/status workflow.
+model ContactMessage {
+  id        BigInt   @id @default(autoincrement())
+  email     String
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contact_messages")
+}
+
+enum SystemRequestStatus {
+  pending
+  approved
+}
+
+model SystemRequestCategory {
+  id        BigInt   @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  requests SystemRequest[]
+
+  @@map("system_request_categories")
+}
+
+model SystemRequest {
+  id             BigInt               @id @default(autoincrement())
+  userId         BigInt               @map("user_id")
+  categoryId     BigInt               @map("category_id")
+  requestDetails String               @map("request_details") @db.Text
+  requestStatus  SystemRequestStatus  @default(pending) @map("request_status")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  user     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category SystemRequestCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("system_requests")
+}
+
+// A check-in tablet at a hospital. `prefix` (A-Z, up to 3 letters) is the letter
+// on queue tickets from this kiosk. The tablet authenticates with a secret
+// device key shown once at creation; only its SHA-256 is stored.
+model Kiosk {
+  id         BigInt    @id @default(autoincrement())
+  hospitalId BigInt     @map("hospital_id")
+  name       String
+  prefix     String    @db.VarChar(3)
+  keyHash    String    @unique @map("key_hash")
+  lastSeenAt DateTime? @map("last_seen_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@index([hospitalId])
+  @@map("kiosks")
+}

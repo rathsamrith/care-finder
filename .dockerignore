@@ -1,0 +1,13 @@
+# Applies to the whole build context (repo root) - see Dockerfile.
+**/node_modules
+**/dist
+**/.git
+**/.env
+**/.env.local
+**/.env.*.local
+backend/storage/uploads
+backend/*.db
+*.log
+**/.DS_Store
+.vscode
+.idea

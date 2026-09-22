@@ -1,46 +1,60 @@
 <script setup lang="ts">
-import WebLayout from '@/Components/Layouts/WebLayout.vue'
-import {ref, onMounted} from 'vue'
-import {hospitalAppointmentListStore} from '@/stores/hospital-appointment-list'
-import {hospitalDetailStore} from '@/stores/hospital-detail'
-import axiosInstance from "@/plugins/axios";
+import { useI18n } from 'vue-i18n'
+import { ref, computed, onMounted } from 'vue'
+import DashboardLayout from '@/components/layouts/dashboard-layout.vue'
+import { doctorNavItems } from '@/components/layouts/dashboard-nav'
+import SectionHeading from '@/components/ui/section-heading.vue'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { hospitalAppointmentListStore } from '@/stores/hospital-appointment-list'
+import { hospitalDetailStore } from '@/stores/hospital-detail'
+import axiosInstance from '@/plugins/axios'
+import { toast } from 'vue-sonner'
+import AppointmentStatusBadge from '@/components/appointment/appointment-status-badge.vue'
+import { formatAppointmentDate as formatDate } from '@/lib/format'
 
+const { t } = useI18n()
 const store = hospitalAppointmentListStore()
 const hospital = hospitalDetailStore()
-const appointment = ref({
-  id: '',
-  patient: '',
-  date: '',
-  status: ''
-})
+
 const centerDialogVisible = ref(false)
 const innerVisible = ref(false)
+const selectedAppointment = ref<any>(null)
 const confirmData = ref({
-  appointment_id: '',
-  room_id: ''
+  appointment_id: ''
 })
-let data = {}
-const alertAppointmentPopup = (id: any, doc_id: any) => {
+const roomId = ref('')
+
+const rooms = computed(() => (hospital.hospitalDetail as any)?.rooms ?? [])
+const appointments = computed(() => store.appointments as any[])
+
+const alertAppointmentPopup = (id: any, doctorHospitalId: any) => {
   confirmData.value.appointment_id = id
-  hospital.fetchHospitalDetail(doc_id)
+  hospital.fetchHospitalDetail(doctorHospitalId)
   centerDialogVisible.value = false
   innerVisible.value = true
 }
+
 const confirmAppointment = async () => {
   innerVisible.value = false
-  const formData = new FormData()
-  formData.append('room_id', confirmData.value.room_id)
-  formData.append('status', 'Confirmed')
-  try{
-    const {data}= await axiosInstance.put(`/appointments/update-status/${confirmData.value.appointment_id}`, formData)
-    console.log(data)
-  }catch(error){
-    console.log(error)
+  try {
+    await axiosInstance.put(`/appointments/update-status/${confirmData.value.appointment_id}`, {
+      status: 'Confirmed',
+      roomId: Number(roomId.value)
+    })
+    toast.success(t('doctorDash.appointments.confirmed'))
+  } catch (error) {
+    console.error(error)
+    toast.error(t('doctorDash.appointments.confirmFailed'))
   }
   store.fetchAppointments()
 }
+
 const showDetails = (row: any) => {
-  data = row
+  selectedAppointment.value = row
   centerDialogVisible.value = true
 }
 
@@ -50,100 +64,85 @@ onMounted(() => {
 </script>
 
 <template>
-  <WebLayout>
-    <el-dialog v-model="centerDialogVisible" title="Appointment Detail" width="30%" center>
-      <div class="dialog-body">
-        <p>Patient : {{ data.user.first_name }}</p>
-        <p>Date : {{ data.appointment_date }}</p>
-        <p>Status : {{ data.status }}</p>
-        <p>My response : {{ data.doctor_status }}</p>
-      </div>
-      <el-dialog
-          v-model="innerVisible"
-          width="300"
-          title="Confirm Appointment"
-          append-to-body
-      >
-        <el-form label-position="top">
-          <el-form-item label="Please assign a room">
-            <el-select v-model="confirmData.room_id">
-              <el-option
-                  v-for="hosp in hospital.hospitalDetail.rooms"
-                  :value="hosp.id"
-                  :label="hosp.name"
-                  :key="hosp.id"
-              />
-            </el-select>
-          </el-form-item>
-        </el-form>
-        <div class="el-dialog__footer">
-          <el-button @click="innerVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmAppointment"> Confirm</el-button>
-        </div>
-      </el-dialog>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="centerDialogVisible = false">Cancel</el-button>
-          <el-button
-              type="primary"
-              @click="alertAppointmentPopup(data.id, data.doctor.hospital_id)"
-          >
-            Confirm
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-    <div class="title">
-      <h1>Appointment Today</h1>
-    </div>
-    <el-table :data="store.appointments" style="width: 100%">
-      <el-table-column prop="id" label="ID" width="170">
-        <template #default="scope">
-          <p>{{ scope.row.id }}</p>
-        </template>
-      </el-table-column>
-      <el-table-column prop="user" label="Patient" width="250">
-        <template #default="scope">
-          <p>{{ scope.row.user.first_name }}</p>
-        </template>
-      </el-table-column>
-      <el-table-column prop="date" label="Date" width="300">
-        <template #default="scope">
-          <p>{{ scope.row.appointment_date }}</p>
-        </template>
-      </el-table-column>
-      <el-table-column prop="status" label="Status" width="300">
-        <template #default="scope">
-          <p>{{ scope.row.status }}</p>
-        </template>
-      </el-table-column>
-      <el-table-column prop="doctor_status" label="My response" width="300">
-        <template #default="scope">
-          <p>{{ scope.row.doctor_status }}</p>
-        </template>
-      </el-table-column>
-      <el-table-column label="Action">
-        <template #default="scope">
-          <el-button plain @click="showDetails(scope.row)">Detail</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-  </WebLayout>
-</template>
-<style>
-/* .table {
-    margin-top: 20px;
-} */
-h1 {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
-}
+  <DashboardLayout :nav-items="doctorNavItems" :portal-label="t('doctorDash.portal')">
+    <Dialog v-model:open="centerDialogVisible">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ t('doctorDash.appointments.detailTitle') }}</DialogTitle>
+        </DialogHeader>
+        <dl v-if="selectedAppointment" class="space-y-2 text-sm text-muted-foreground">
+          <p><b class="text-foreground">{{ t('doctorDash.appointments.patientLabel') }}</b> {{ selectedAppointment.user?.first_name }} {{ selectedAppointment.user?.last_name }}</p>
+          <p v-if="selectedAppointment.user?.phone_number"><b class="text-foreground">{{ t('doctorDash.appointments.phoneLabel') }}</b> {{ selectedAppointment.user?.phone_number }}</p>
+          <p><b class="text-foreground">{{ t('doctorDash.appointments.dateLabel') }}</b> {{ formatDate(selectedAppointment.appointment_date) }}</p>
+          <p class="flex items-center gap-2"><b class="text-foreground">{{ t('doctorDash.appointments.statusLabel') }}</b> <AppointmentStatusBadge :status="selectedAppointment.status" /></p>
+          <p><b class="text-foreground">{{ t('doctorDash.appointments.responseLabel') }}</b> {{ selectedAppointment.doctor_status }}</p>
+        </dl>
+        <DialogFooter>
+          <Button variant="outline" @click="centerDialogVisible = false">{{ t('doctorDash.appointments.cancel') }}</Button>
+          <Button v-if="selectedAppointment?.status !== 'Confirmed'" @click="alertAppointmentPopup(selectedAppointment?.id, selectedAppointment?.doctor?.hospital_id)">{{ t('doctorDash.appointments.confirm') }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
-.title {
-  text-align: center;
-  background-color: skyblue;
-  height: 8vh;
-}
-</style>
+    <Dialog v-model:open="innerVisible">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ t('doctorDash.appointments.confirmTitle') }}</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-foreground">{{ t('doctorDash.appointments.assignRoom') }}</label>
+          <Select v-model="roomId">
+            <SelectTrigger class="w-full">
+              <SelectValue :placeholder="t('doctorDash.appointments.selectRoom')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="room in rooms" :key="room.id" :value="String(room.id)">{{ room.name }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="innerVisible = false">{{ t('doctorDash.appointments.cancel') }}</Button>
+          <Button @click="confirmAppointment">{{ t('doctorDash.appointments.confirm') }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <SectionHeading :kicker="t('doctorDash.appointments.kicker')">
+      <template #title>{{ t('nav.appointments') }}</template>
+    </SectionHeading>
+
+    <Card class="mt-6">
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{{ t('doctorDash.appointments.id') }}</TableHead>
+              <TableHead>{{ t('doctorDash.appointments.patient') }}</TableHead>
+              <TableHead>{{ t('doctorDash.appointments.date') }}</TableHead>
+              <TableHead>{{ t('doctorDash.appointments.status') }}</TableHead>
+              <TableHead>{{ t('doctorDash.appointments.myResponse') }}</TableHead>
+              <TableHead class="text-right">{{ t('doctorDash.appointments.action') }}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="row in appointments" :key="row.id">
+              <TableCell>{{ row.id }}</TableCell>
+              <TableCell>{{ row.user?.first_name }}</TableCell>
+              <TableCell>{{ formatDate(row.appointment_date) }}</TableCell>
+              <TableCell>
+                <AppointmentStatusBadge :status="row.status" />
+              </TableCell>
+              <TableCell>{{ row.doctor_status }}</TableCell>
+              <TableCell class="text-right">
+                <Button variant="outline" size="sm" @click="showDetails(row)">{{ t('doctorDash.appointments.detail') }}</Button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <p v-if="!appointments.length" class="p-6 text-center text-sm text-muted-foreground">
+          {{ t('doctorDash.appointments.empty') }}
+        </p>
+      </CardContent>
+    </Card>
+  </DashboardLayout>
+</template>
