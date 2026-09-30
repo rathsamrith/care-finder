@@ -1,4 +1,4 @@
-<script setup="ts">
+<script setup lang="ts">
 import WebLayout from '@/Components/Layouts/WebLayout.vue'
 import FooterLayout from '@/Components/FooterLayout.vue'
 </script>

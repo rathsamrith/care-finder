@@ -1,13 +1,13 @@
 <script setup lang="ts"></script>
 <template>
-  <div class="footer">
+  <div class="footer mt-5">
     <div class="content">
       <div class="logo_text">
         <img src="@/assets/logo/care_finder-02.png" alt="" />
         <p>
-        Browse through our professionally designed selection. Browse through our professionally
-        designed selection.
-      </p>
+          Browse through our professionally designed selection. Browse through our professionally
+          designed selection.
+        </p>
       </div>
       <div class="services">
         <h4>Navigation</h4>
@@ -57,13 +57,13 @@
 .footer {
   background-color: rgb(232, 245, 255);
   color: #000000;
-  //position: fixed;
   width: 100%;
   bottom: 0;
   left: 0;
+  padding: 1rem 0;
 }
 
-.services p{
+.services p {
   width: 50px;
 }
 .footer .content {
@@ -100,13 +100,13 @@ footer {
 footer hr {
   margin: 2rem 0;
 }
-.details{
+.details {
   width: 100px;
 }
-.logo_text{
+.logo_text {
   width: 200px;
 }
-.logo_text img{
+.logo_text img {
   width: 200px;
 }
 @media (max-width: 767px) {

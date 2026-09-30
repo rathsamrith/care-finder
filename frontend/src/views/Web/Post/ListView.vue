@@ -27,27 +27,12 @@
   </WebLayout>
 </template>
 
-<script>
+<script setup lang="ts">
 import WebLayout from '@/Components/Layouts/WebLayout.vue'
 import { usePostStore } from '@/stores/post-list'
-
-export default {
-  name: 'PostList',
-  components: {
-    WebLayout
-  },
-  data() {
-    return {
-      store: usePostStore(),
-    }
-  },
-  mounted() {
-    this.fetchPosts()
-  },
-  methods: {
-    fetchPosts() {
-      this.store.fetchPosts()
-    }
-  }
-}
+import { onMounted } from 'vue'
+const store = usePostStore()
+onMounted(async () => {
+  await store.fetchPosts()
+})
 </script>

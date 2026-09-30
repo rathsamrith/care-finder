@@ -1,9 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import axiosInstance from '@/plugins/axios'
 import { useAuthStore } from '@/stores/auth-store'
-import { createAcl, defineAclRules } from 'vue-simple-acl'
+import { simpleAcl, rules } from '@/acl'
 
-const simpleAcl = createAcl()
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -39,150 +38,150 @@ const router = createRouter({
     {
       path: '/post',
       name: 'post',
-      component: () => import('../views/Web/Post/ListView.vue')
+      component: () => import('@/views/Web/Post/ListView.vue')
     },
     {
       path: '/about',
       name: 'about', // Fixed duplicate name
-      component: () => import('../views/Web/AboutView.vue')
+      component: () => import('@/views/Web/AboutView.vue')
     },
     {
       path: '/contact',
       name: 'contact',
-      component: () => import('../views/Web/ContactView.vue')
+      component: () => import('@/views/Web/ContactView.vue')
     },
     {
       path: '/hospital/dashboard',
       name: 'dashboard',
-      component: () => import('../views/Web/Hospital/DashboardView.vue')
+      component: () => import('@/views/Web/Hospital/DashboardView.vue')
     },
     {
-      path:'/appointment',
-      name:'appointment',
-      component:()=>import('../views/Web/User/AppointmentView.vue')
+      path: '/appointment',
+      name: 'appointment',
+      component: () => import('@/views/Web/User/AppointmentView.vue')
     },
     {
-      path:'/hospital/feedbacks',
-      name:'feedbacks',
-      component:()=>import('../views/Web/Hospital/FeedbackView.vue')
+      path: '/hospital/feedbacks',
+      name: 'feedbacks',
+      component: () => import('@/views/Web/Hospital/FeedbackView.vue')
     },
     {
-      path:'/hospital/appointments',
-      name:'appointments',
-      component: () => import('../views/Web/Hospital/AppointmentView.vue')
+      path: '/hospital/appointments',
+      name: 'appointments',
+      component: () => import('@/views/Web/Hospital/AppointmentView.vue')
     },
     {
       path: '/map',
       name: 'map',
-      component: () => import('../views/Web/User/MapView.vue')
+      component: () => import('@/views/Web/User/MapView.vue')
     },
     {
       path: '/myHospital',
       name: 'myHospital',
-      component: () => import('../views/Web/Hospital/HospitalView.vue')
+      component: () => import('@/views/Web/Hospital/HospitalView.vue')
     },
     {
-      path:'/hospital/doctors',
-      name:'doctors',
-      component:()=>import('../views/Web/Hospital/AddDoctorView.vue')
+      path: '/hospital/doctors',
+      name: 'doctors',
+      component: () => import('@/views/Web/Hospital/AddDoctorView.vue')
     },
     {
       path: '/',
       name: 'user-hospital',
-      component: () => import('../views/Web/User/HospitalView.vue')
+      component: () => import('@/views/Web/User/HospitalView.vue')
     },
     {
-      path:'/doctor/dashboard',
-      name:'doctor-dashboard',
-      component:()=>import('../views/Web/Doctor/Dashboard.vue')
+      path: '/doctor/dashboard',
+      name: 'doctor-dashboard',
+      component: () => import('@/views/Web/Doctor/Dashboard.vue')
     },
     {
-      path:'/doctor/appointment',
-      name:'doctor-appointment',
-      component:()=>import('../views/Web/Doctor/Appointment.vue')
+      path: '/doctor/appointment',
+      name: 'doctor-appointment',
+      component: () => import('@/views/Web/Doctor/Appointment.vue')
     },
     {
       path: '/favorite',
       name: 'favorite',
-      component: () => import('../views/Web/User/FavoriteView.vue')
+      component: () => import('@/views/Web/User/FavoriteView.vue')
     },
     {
-      path:'/forgot-password',
-      name:'forgot-password',
-      component: () => import('../views/Admin/Auth/ForgotPassword.vue')
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('@/views/Admin/Auth/ForgotPassword.vue')
     },
     {
-      path:'/reset-password',
-      name:'reset-password',
-      component: () => import('../views/Admin/Auth/ResetPassword.vue')
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/Admin/Auth/ResetPassword.vue')
     },
     {
-      path:'/not-found',
-      name:'not-found',
-      component: () => import('../views/Web/404/NotFoundView.vue')
-
-    }
-    ,
-    {
-      path:'/not-found-page',
-      name:'not-found-page',
-      component: () => import('../views/Web/404/PageNotFound.vue')
+      path: '/not-found',
+      name: 'not-found',
+      component: () => import('@/views/Web/404/NotFoundView.vue')
     },
     {
-      path:'/hospital/calendar',
-      name:'hospital-calendar',
-      component:() => import('../views/Web/Hospital/CalendarView.vue')
+      path: '/not-found-page',
+      name: 'not-found-page',
+      component: () => import('@/views/Web/404/PageNotFound.vue')
     },
     {
-      path:'/doctor/calendar',
-      name:'doctor-calendar',
-      component:() => import('../views/Web/Doctor/CalendarView.vue')
+      path: '/hospital/calendar',
+      name: 'hospital-calendar',
+      component: () => import('@/views/Web/Hospital/CalendarView.vue')
     },
     {
-      path:'/calendar',
-      name:'user-calendar',
-      component:() => import('../views/Web/User/CalendarView.vue')
-    }
-    ,
+      path: '/doctor/calendar',
+      name: 'doctor-calendar',
+      component: () => import('@/views/Web/Doctor/CalendarView.vue')
+    },
     {
-      path:'/hospital/promotion',
-      name:'upload/promotion',
-      component: () => import('../views/Web/Hospital/UploadPromotion.vue')
-    }
-    ,
+      path: '/calendar',
+      name: 'user-calendar',
+      component: () => import('@/views/Web/User/CalendarView.vue')
+    },
     {
-      path:'/hospital/service',
-      name:'service-hospital',
-      component: () => import('../views/Web/Hospital/ServiceHospital.vue')
+      path: '/hospital/promotion',
+      name: 'upload/promotion',
+      component: () => import('@/views/Web/Hospital/UploadPromotion.vue')
+    },
+    {
+      path: '/hospital/service',
+      name: 'service-hospital',
+      component: () => import('@/views/Web/Hospital/ServiceHospital.vue')
     }
   ],
-  linkExactActiveClass:'active'
+  linkExactActiveClass: 'active'
 })
 
 router.beforeEach(async (to, from, next) => {
-  const publicPages = ['/landing', '/login', '/about', '/contact','/forgot-password','/reset-password','/not-found','/not-found-page']
+  const publicPages = [
+    '/landing',
+    '/login',
+    '/about',
+    '/contact',
+    '/forgot-password',
+    '/reset-password',
+    '/not-found',
+    '/not-found-page'
+  ]
   const authRequired = !publicPages.includes(to.path)
   const store = useAuthStore()
-  try {
-    const { data } = await axiosInstance.get('/me')
-    store.isAuthenticated = true
-    store.user = data.data
-    store.hospital=data.hospitals
-    store.permissions = data.permissions.map((item: any) => item.front_name)
-    store.roles = data.roles.map((item: any) => item)
-    const rules = () => defineAclRules((setRule) => {
-      store.permissions.forEach((permission: string) => {
-        setRule(permission, () => true)
-      })
-    })
-    simpleAcl.rules = rules()
-  } catch (error) {
-    //
-  }
   if (authRequired && !store.isAuthenticated) {
     next('/landing')
   } else {
     next()
+    try {
+      const { data } = await axiosInstance.get('/me')
+      store.isAuthenticated = true
+      store.user = data.data
+      store.hospital = data.hospitals
+      store.permissions = data.permissions.map((item: any) => item.front_name)
+      store.roles = data.roles.map((item: any) => item)
+      simpleAcl.rules = rules(store.permissions)
+    } catch (error) {
+      //
+    }
   }
 })
 
