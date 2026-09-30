@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { EventApi, DateSelectArg, EventClickArg } from '@fullcalendar/core'
+import type { EventApi, DateSelectArg, EventClickArg } from '@fullcalendar/core'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
