@@ -227,7 +227,7 @@ const router = createRouter({
       component: () => import('../views/web/hospital/site-editor-view.vue')
     }
   ],
-  linkExactActiveClass:'active'
+  linkExactActiveClass: 'active'
 })
 
 router.beforeEach(async (to, from, next) => {

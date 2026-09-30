@@ -1,0 +1,57 @@
+/frontend/.env
+/frontend/node_modules
+/frontend/dist
+/frontend/dist-ssr
+/frontend/coverage
+/frontend/*.local
+
+# Logs
+/frontend/logs
+/frontend/*.log
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+/frontend/lerna-debug.log*
+
+# Cypress
+/frontend/cypress/videos/
+/frontend/cypress/screenshots/
+
+# Editor directories and files
+/frontend/.vscode/*
+!.vscode/extensions.json
+/frontend/.idea
+/frontend/*.suo
+/frontend/*.ntvs*
+/frontend/*.njsproj
+/frontend/*.sln
+/frontend/*.sw?
+
+/frontend/*.tsbuildinfo
+
+
+#backend
+/backend/.env
+/backend/.env.backup
+/backend/node_modules
+/backend/dist
+/backend/vendor
+
+/backend/public/hot
+/backend/public/storage
+
+/backend/storage/*.key
+
+/backend/.phpunit.result.cache
+/backend/docker-compose.override.yml
+/backend/Homestead.json
+/backend/Homestead.yaml
+
+# Logs
+/backend/npm-debug.log
+/backend/yarn-error.log
+
+# IDE
+/backend/.idea
+/backend/.vscode
