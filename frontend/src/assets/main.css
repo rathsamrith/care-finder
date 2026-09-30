@@ -1,9 +1,166 @@
+
 @import './base.css';
 
-*{
-  box-sizing: border-box !important;;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box !important;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  /*background: rgb(238, 237, 237);*/
-  height: 100%;
+  min-height: 100%;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+/* Khmer stacks tall subscripts/diacritics; the Latin-tuned 1.6 line-height and
+   tracking clip them. Latin font stays first so mixed text keeps its look -
+   Khmer glyphs fall through to Noto Sans Khmer via the font stack. */
+:lang(km) body,
+:lang(km) input,
+:lang(km) textarea,
+:lang(km) button {
+  line-height: 1.8;
+  letter-spacing: normal;
+}
+
+/* Khmer letterforms look smaller and lighter than Latin at the same size, and
+   have no uppercase (so the "uppercase small label" style only makes them weak).
+   Give small text a little more size, weight and contrast. */
+:lang(km) .text-xs {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+:lang(km) .font-mono.uppercase {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+:lang(km) .text-slate-500 {
+  color: #475569; /* slate-600 */
+}
+
+:lang(km) .text-slate-400 {
+  color: #64748b; /* slate-500 */
+}
+
+:lang(km) .tracking-wide,
+:lang(km) .tracking-wider,
+:lang(km) .tracking-widest,
+:lang(km) [class*='tracking-['] {
+  letter-spacing: normal;
+}
+
+/* Language switch cross-fade (see changeLocale in src/i18n/index.ts). */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 180ms;
+  }
+}
+
+/* "Save as PDF" on the check-in pass prints just the pass (the dialog is teleported
+   to <body>, so hide everything except it). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-pass,
+  .print-pass * {
+    visibility: visible;
+  }
+  .print-pass {
+    position: fixed;
+    inset: 0 auto auto 0;
+    width: 100%;
+    background: #fff;
+  }
+}
+
+@layer components {
+  .cf-shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .cf-card {
+    @apply rounded-3xl border border-slate-200 bg-white shadow-soft;
+  }
+}
+
+@layer base {
+  /* shadcn-vue tokens, mapped onto the existing CareFinder brand palette
+     (see tailwind.config.js) rather than the CLI's generic defaults - so
+     shadcn primitives (Button, Dialog, Sidebar, ...) render in-brand instead
+     of generic black/white/gray. No `.dark` variant: this app has no dark
+     mode toggle anywhere. */
+  :root {
+    /* Hospital Finder design system - trustworthy, geographic, deep medical
+       green (see the Design Tokens section of the spec, section 71). */
+    --background: #F7F9F8;
+    --foreground: #17201D;
+    --card: #FFFFFF;
+    --card-foreground: #17201D;
+    --popover: #FFFFFF;
+    --popover-foreground: #17201D;
+    --primary: #176B5B;
+    --primary-foreground: #FFFFFF;
+    --secondary-foreground: #FFFFFF;
+    --muted: #F1F4F3;
+    --muted-foreground: #5E6B66;
+    --accent-foreground: #FFFFFF;
+    --destructive: #C62828;
+    --destructive-foreground: #FFFFFF;
+    --border: #DDE4E1;
+    --input: #DDE4E1;
+    --ring: #176B5B;
+    --chart-1: #176B5B;
+    --chart-2: #2F7F83;
+    --chart-3: #C98A2B;
+    --chart-4: #2E8B57;
+    --chart-5: #C62828;
+    --radius: 0.625rem;
+    /* v4's @theme auto-derives --radius-sm/md/lg from a base --radius; v3 has
+       no such mechanism, so these are defined explicitly (same formula as the
+       borderRadius scale in tailwind.config.js) for the few generated
+       components that reference --radius-md directly as a plain CSS var. */
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --sidebar: #FFFFFF;
+    --sidebar-foreground: #17201D;
+    --sidebar-primary: #176B5B;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #E7F3EF;
+    --sidebar-accent-foreground: #125748;
+    --sidebar-border: #DDE4E1;
+    --sidebar-ring: #176B5B;
+  }
+  * {
+    @apply border-border;
+    outline-color: var(--ring);
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
 }

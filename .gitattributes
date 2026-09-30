@@ -1,0 +1,4 @@
+# Shell scripts must keep LF line endings - they run inside Linux containers
+# (docker/entrypoint.sh), and a CRLF shebang line breaks them outright.
+*.sh text eol=lf
+Dockerfile text eol=lf

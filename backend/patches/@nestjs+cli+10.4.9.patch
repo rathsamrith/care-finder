@@ -1,0 +1,31 @@
+diff --git a/node_modules/@nestjs/cli/actions/start.action.js b/node_modules/@nestjs/cli/actions/start.action.js
+index 6671cb2..3279389 100644
+--- a/node_modules/@nestjs/cli/actions/start.action.js
++++ b/node_modules/@nestjs/cli/actions/start.action.js
+@@ -73,17 +73,8 @@ class StartAction extends build_action_1.BuildAction {
+         let childProcessArgs = [];
+         const argsStartIndex = process.argv.indexOf('--');
+         if (argsStartIndex >= 0) {
+-            // Prevents the need for users to double escape strings
+-            // i.e. I can run the more natural
+-            //   nest start -- '{"foo": "bar"}'
+-            // instead of
+-            //   nest start -- '\'{"foo": "bar"}\''
+-            childProcessArgs = process.argv
+-                .slice(argsStartIndex + 1)
+-                .map((arg) => JSON.stringify(arg));
++            childProcessArgs = process.argv.slice(argsStartIndex + 1);
+         }
+-        outputFilePath =
+-            outputFilePath.indexOf(' ') >= 0 ? `"${outputFilePath}"` : outputFilePath;
+         const processArgs = [outputFilePath, ...childProcessArgs];
+         if (debug) {
+             const inspectFlag = typeof debug === 'string' ? `--inspect=${debug}` : '--inspect';
+@@ -92,7 +85,6 @@ class StartAction extends build_action_1.BuildAction {
+         processArgs.unshift('--enable-source-maps');
+         return (0, child_process_1.spawn)(binaryToRun, processArgs, {
+             stdio: 'inherit',
+-            shell: true,
+         });
+     }
+ }

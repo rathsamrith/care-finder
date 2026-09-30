@@ -8,11 +8,7 @@ export const usePostStore = defineStore('post', {
   actions: {
     async fetchPosts() {
       try {
-        const response = await axiosInstance.get('/post/list', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`
-          }
-        });
+        const response = await axiosInstance.get('/posts');
         this.posts = response.data;
       } catch (error) {
         console.error('Error fetching posts:', error);

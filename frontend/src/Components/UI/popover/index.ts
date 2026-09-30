@@ -1,0 +1,7 @@
+export { default as Popover } from './popover.vue'
+export { default as PopoverAnchor } from './popover-anchor.vue'
+export { default as PopoverContent } from './popover-content.vue'
+export { default as PopoverDescription } from './popover-description.vue'
+export { default as PopoverHeader } from './popover-header.vue'
+export { default as PopoverTitle } from './popover-title.vue'
+export { default as PopoverTrigger } from './popover-trigger.vue'

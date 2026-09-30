@@ -3,41 +3,47 @@ import axiosInstance from '@/plugins/axios'
 
 export const FeedbackList = defineStore('feedback-list', {
   state: () => ({
-    allFeedback: [],
-    recentFeedbacks: [],
-    monthlyFeedbacks: [],
-    feedbackDetails:{},
-    mostRated:[],
+    allFeedback: [] as any[],
+    recentFeedbacks: [] as any[],
+    monthlyFeedbacks: [] as any[],
+    feedbackDetails: {} as any,
+    mostRated: [] as any[],
   }),
   actions: {
-    async fetchFeedback() {
+    async fetchFeedback(hospitalId?: number | string) {
       try {
-        const { data } = await axiosInstance.get('feedbacks/list')
-        this.allFeedback = data.data
+        const { data } = await axiosInstance.get('/rates', {
+          params: hospitalId ? { hospitalId } : undefined
+        })
+        this.allFeedback = data
       } catch (error) {
         console.log(error)
       }
     },
     async deleteFeedback(id: number) {
       try {
-        const response = await axiosInstance.delete(`/feedbacks/delete/${id}`)
+        const response = await axiosInstance.delete(`/rates/${id}`)
         console.log(response)
       } catch (error) {
         console.log(error)
       }
     },
-    async fetchRecentFeedbacks() {
+    async fetchRecentFeedbacks(hospitalId?: number | string) {
       try {
-        const { data } = await axiosInstance.get('feedbacks/recent')
-        this.recentFeedbacks = data.data
+        const { data } = await axiosInstance.get('/rates/recent', {
+          params: hospitalId ? { hospitalId } : undefined
+        })
+        this.recentFeedbacks = data
       } catch (error) {
         console.log(error)
       }
     },
-    async fetchMonthlyFeedbacks() {
+    async fetchMonthlyFeedbacks(hospitalId?: number | string) {
       try {
-        const { data } = await axiosInstance.get('feedbacks/monthly')
-        this.monthlyFeedbacks = data.data
+        const { data } = await axiosInstance.get('/rates/monthly', {
+          params: hospitalId ? { hospitalId } : undefined
+        })
+        this.monthlyFeedbacks = data
         localStorage.setItem('monthlyFeedbacks', JSON.stringify(this.monthlyFeedbacks))
       } catch (error) {
         console.log(error)
@@ -45,17 +51,17 @@ export const FeedbackList = defineStore('feedback-list', {
     },
     async showFeedback(id: number) {
       try {
-        const {data}=await axiosInstance.get(`/feedbacks/show/${id}`)
-        this.feedbackDetails=data.data
+        const {data}=await axiosInstance.get(`/rates/${id}`)
+        this.feedbackDetails=data
       }catch (e){
         console.log(e)
       }
     },
     async fetchMostRated(){
       try{
-        const {data}=await axiosInstance.get('/feedbacks/mostRated')
-        this.mostRated=data.data
-        console.log(data.data)
+        const {data}=await axiosInstance.get('/rates/most-rated')
+        this.mostRated=data
+        console.log(data)
       }catch (error){
         console.log(error)
       }

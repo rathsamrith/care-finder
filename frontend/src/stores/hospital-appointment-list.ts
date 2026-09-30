@@ -13,18 +13,14 @@ export const hospitalAppointmentListStore = defineStore('appointments', {
         async fetchAppointments() {
             try {
                 const {data} = await axiosInstance.get('/appointments/list')
-                this.appointments = data.data
-                console.log(data)
+                this.appointments = data
             } catch (error) {
                 console.log(error)
             }
         },
         async confirmAppointment(id: any) {
-            const formData = new FormData()
-            formData.append('status', 'Confirmed')
             try {
-                const {data} = await axiosInstance.put(`/appointments/update-status/${id}`, formData)
-                this.message = data
+                const {data} = await axiosInstance.put(`/appointments/update-status/${id}`, { status: 'Confirmed' })
                 this.message = data
             } catch (error) {
                 console.log(error)
@@ -33,7 +29,7 @@ export const hospitalAppointmentListStore = defineStore('appointments', {
         async fetchMonthlyAppointment() {
             try {
                 const {data} = await axiosInstance.get('/appointments/monthlyAppointments')
-                this.monthlyAppointment = data.data
+                this.monthlyAppointment = data
                 localStorage.setItem('appointments', JSON.stringify(this.monthlyAppointment))
             } catch (e) {
                 console.log(e)
@@ -41,32 +37,24 @@ export const hospitalAppointmentListStore = defineStore('appointments', {
         },
         async fetchAppointmentSummary() {
             try {
-                const response = await axiosInstance.get('/appointments/summary')
-                console.log(response)
-                if (response.data.success) {
-                    this.appointmentSummary = response.data.data
-                } else {
-                    console.error('Failed to fetch appointments for today')
-                }
+                const {data} = await axiosInstance.get('/appointments/summary')
+                this.appointmentSummary = data
             } catch (error) {
                 console.error('Error fetching appointments for today:', error)
             }
         },
         async cancelAppointment(id: any) {
-            const formData = new FormData()
-            formData.append('status', 'Canceled')
             try {
-                const {data} = await axiosInstance.put(`/appointments/cancel/${id}`, formData)
+                const {data} = await axiosInstance.put(`/appointments/cancel/${id}`, {})
                 this.message = data
-                console.log(data)
             } catch (error) {
                 console.log(error)
             }
         },
-        async fetchCalendarData() {
+        async fetchCalendarData(params?: {month?: number; year?: number}) {
             try {
-                const {data} = await axiosInstance.get('/appointments/calendar')
-                this.calendars = data.data
+                const {data} = await axiosInstance.get('/appointments/calendar', {params})
+                this.calendars = data
             } catch (error) {
                 console.log(error)
             }
@@ -78,6 +66,15 @@ export const hospitalAppointmentListStore = defineStore('appointments', {
             } catch (error) {
                 console.log(error)
             }
+        },
+        async createAppointment(payload: any) {
+            const {data} = await axiosInstance.post('/appointments/create', payload)
+            return data
+        },
+        async searchPatients(q: string) {
+            if (!q.trim()) return []
+            const {data} = await axiosInstance.get('/appointments/patients/search', {params: {q}})
+            return data
         }
     }
 })
