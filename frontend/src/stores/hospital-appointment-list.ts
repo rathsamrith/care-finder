@@ -3,11 +3,11 @@ import axiosInstance from '@/plugins/axios'
 
 export const hospitalAppointmentListStore = defineStore('appointments', {
     state: () => ({
-        appointments: [],
-        calendars: [],
-        monthlyAppointment: [],
-        appointmentSummary: {},
-        message: {}
+        appointments: [] as any[],
+        calendars: [] as any[],
+        monthlyAppointment: [] as any[],
+        appointmentSummary: {} as any,
+        message: {} as any
     }),
     actions: {
         async fetchAppointments() {

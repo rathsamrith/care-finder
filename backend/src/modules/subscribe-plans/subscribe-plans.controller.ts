@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
@@ -11,6 +12,7 @@ import { UpdateSubscribePlanDto } from './dto/update-subscribe-plan.dto';
 // were stubs. See MIGRATION_ROADMAP.md, Phase 5.
 @Controller('subscribe-plans')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AnyAuthenticated()
 export class SubscribePlansController {
   constructor(private readonly subscribePlansService: SubscribePlansService) {}
 

@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import {
   Body,
   Controller,
@@ -22,6 +23,7 @@ import { AuthenticatedUser } from '../../core/auth/strategies/jwt-access.strateg
 // auth - there was no public system-requests endpoint in the original app.
 @Controller('system-requests')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AnyAuthenticated()
 export class SystemRequestsController {
   constructor(private readonly systemRequestsService: SystemRequestsService) {}
 

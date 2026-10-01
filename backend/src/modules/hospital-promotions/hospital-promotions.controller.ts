@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import { Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { HospitalPromotionsService } from './hospital-promotions.service';
@@ -18,6 +19,7 @@ import { validateDto } from '../../common/utils/validate-dto.util';
 // declared without @UseGuards, ahead of the ':id' route, so Nest doesn't try
 // to parse "public" as a promotion id.
 @Controller('hospital-promotions')
+@AnyAuthenticated()
 export class HospitalPromotionsController {
   constructor(private readonly hospitalPromotionsService: HospitalPromotionsService) {}
 

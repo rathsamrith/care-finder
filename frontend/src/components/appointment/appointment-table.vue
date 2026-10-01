@@ -24,10 +24,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 const { t } = useI18n()
 const appointment = hospitalAppointmentListStore()
 let visible = ref(false)
-let currentAppointment = {}
-let doctorData = ref([])
-let doctorEditData = ref([])
-let hospital = ref([])
+let currentAppointment: any = {}
+const doctorData = ref<any[]>([])
+const doctorEditData = ref<any[]>([])
+const hospital = ref<any[]>([])
 const dialogTableVisible = ref(false)
 const checkInId = ref<number | string | null>(null)
 const checkInOpen = ref(false)
@@ -40,7 +40,7 @@ const canCancel = (row: any) => row.status !== 'Arrived' && row.status !== 'Comp
 const dialogEditVisible = ref(false)
 const store = useAuthStore()
 
-const statusTone = {
+const statusTone: Record<string, string> = {
   Canceled: 'accent',
   Confirmed: 'success',
   Pending: 'info',
@@ -75,7 +75,7 @@ let formEdit = reactive({
 async function fetchHospitals() {
   try {
     const { data } = await axiosInstance.get('/hospitals/list')
-    data.forEach((hosp) => {
+    data.forEach((hosp: any) => {
       hospital.value.push(hosp)
     })
   } catch (error) {
@@ -100,10 +100,10 @@ const open2 = (_title: string, message: string, type: 'success' | 'warning' | 'e
   toast[type](message)
 }
 
-async function fetchDoctors(hospital_id: any, docData: any[]) {
+async function fetchDoctors(hospital_id: any, docData: { value: any[] }) {
   try {
     const { data } = await axiosInstance.get(`/hospitals/show/${hospital_id}`)
-    data.doctors.forEach((doctor) => {
+    data.doctors.forEach((doctor: any) => {
       docData.value.push(doctor)
       console.log(doctor)
     })
@@ -162,12 +162,12 @@ const onUpdate = async () => {
   }
 }
 
-async function cancelAppointment(row) {
+async function cancelAppointment(row: any) {
   await appointment.cancelAppointment(row.id)
   open2(t('appointment.table.toastTitle'), t('appointment.table.canceled'), 'success')
 }
 
-function openDialog(row) {
+function openDialog(row: any) {
   visible.value = true
   currentAppointment = row
 }
@@ -347,7 +347,7 @@ watch(
               <TableCell>{{ row.hospital }}</TableCell>
               <TableCell>{{ row.appointment_date }}</TableCell>
               <TableCell>
-                <Badge :tone="statusTone[row.status] || 'neutral'">{{ translateStatus(t, row.status) }}</Badge>
+                <Badge :tone="(statusTone[row.status] || 'neutral') as any">{{ translateStatus(t, row.status) }}</Badge>
               </TableCell>
               <TableCell>
                 <div class="flex gap-2">

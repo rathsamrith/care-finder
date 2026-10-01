@@ -37,10 +37,10 @@ export default defineComponent({
   },
   data() {
     return {
-      categories: [],
+      categories: [] as any[],
       province: provinces,
-      district: [],
-      commune: [],
+      district: [] as any[],
+      commune: [] as any[],
       village: [],
       dialogVisible: ref(false),
       submissionFrom: {

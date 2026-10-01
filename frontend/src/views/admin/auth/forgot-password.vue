@@ -41,10 +41,10 @@ async function forgotPassword() {
   try {
     await store.sentRequest(forgotPasswordEmail.value)
     if (store.message.success) {
-      toast.success(store.message.message)
+      toast.success(store.message.message ?? '')
       await router.push('/login')
     } else {
-      toast.warning(store.message.message)
+      toast.warning(store.message.message ?? '')
       location.reload()
     }
   } catch (error) {

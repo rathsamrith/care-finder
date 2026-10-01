@@ -128,7 +128,7 @@ const store = hospitalAppointmentListStore()
 const appointments = computed(() => store.appointments as any[])
 const outerVisible = ref(false)
 const innerVisible = ref(false)
-let currentAppointment = {}
+let currentAppointment: any = {}
 let id: any = ''
 
 const statusOptions = Object.keys(statusTone)

@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
@@ -12,6 +13,7 @@ import { ListRateRepliesQueryDto } from './dto/list-rate-replies.query.dto';
 // MIGRATION_ROADMAP.md's route mapping table.
 @Controller('rate-replies')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AnyAuthenticated()
 export class RateRepliesController {
   constructor(private readonly rateRepliesService: RateRepliesService) {}
 

@@ -47,16 +47,16 @@ export default {
   data() {
     return {
       currentSlide: 0,
-      carouselItems: []
+      carouselItems: [] as any[]
     }
   },
   methods: {
-    scrollCarousel(direction) {
-      const carousel = this.$refs.carousel
-      const firstCardWidth = carousel.querySelector('.category-card').clientWidth + 16
+    scrollCarousel(direction: number) {
+      const carousel = this.$refs.carousel as HTMLElement
+      const firstCardWidth = (carousel.querySelector('.category-card') as HTMLElement).clientWidth + 16
       carousel.scrollLeft += direction * firstCardWidth
     },
-    setCurrentSlide(index) {
+    setCurrentSlide(index: number) {
       this.currentSlide = index
     },
     async fetchCategory() {

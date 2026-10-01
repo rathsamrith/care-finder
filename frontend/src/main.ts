@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
-import App from './app.vue'
+import App from '@/App.vue'
 import router from './router'
 import i18n, { warmFonts } from './i18n'
 import axios from './plugins/axios'
@@ -21,7 +21,7 @@ configure({
   validateOnInput: true
 })
 
-app.use(createPinia()).use(router.router).use(router.simpleAcl).use(i18n)
+app.use(createPinia()).use(router.router).use(i18n)
 
 app.config.globalProperties.$axios = axios
 app.mount('#app')

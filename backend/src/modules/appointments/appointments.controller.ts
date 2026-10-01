@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
@@ -31,6 +32,7 @@ export class AppointmentsController {
     private readonly checkIn: CheckInService,
   ) {}
 
+  @AnyAuthenticated()
   @Get()
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: QueryAppointmentsDto) {
     return this.appointmentsService.list(user, query);
@@ -40,6 +42,7 @@ export class AppointmentsController {
   // bare path above. Must come before the other named GET routes so it
   // doesn't shadow them, though as a fixed literal segment order among
   // literals doesn't actually matter - kept here for readability.
+  @AnyAuthenticated()
   @Get('list')
   listAlias(@CurrentUser() user: AuthenticatedUser, @Query() query: QueryAppointmentsDto) {
     return this.appointmentsService.list(user, query);
@@ -47,6 +50,7 @@ export class AppointmentsController {
 
   // Doctor free/busy grid for a day (times only). Literal route, so it must
   // stay above any `:id` wildcard below.
+  @AnyAuthenticated()
   @Get('availability')
   availability(@Query() query: AvailabilityQueryDto) {
     return this.appointmentsService.availability(BigInt(query.doctorId), query.date);
@@ -59,27 +63,32 @@ export class AppointmentsController {
     return this.appointmentsService.queue(user);
   }
 
+  @AnyAuthenticated()
   @Get('summary')
   summary(@CurrentUser() user: AuthenticatedUser) {
     return this.appointmentsService.summary(user);
   }
 
+  @AnyAuthenticated()
   @Get('today')
   today(@CurrentUser() user: AuthenticatedUser) {
     return this.appointmentsService.today(user);
   }
 
+  @AnyAuthenticated()
   @Get('calendar')
   calendar(@CurrentUser() user: AuthenticatedUser, @Query() query: CalendarQueryDto) {
     return this.appointmentsService.calendar(user, query.month, query.year);
   }
 
+  @AnyAuthenticated()
   @Get('monthly')
   monthly(@CurrentUser() user: AuthenticatedUser) {
     return this.appointmentsService.monthly(user);
   }
 
   // Alias - frontend requests this exact path.
+  @AnyAuthenticated()
   @Get('monthlyAppointments')
   monthlyAlias(@CurrentUser() user: AuthenticatedUser) {
     return this.appointmentsService.monthly(user);
@@ -95,6 +104,7 @@ export class AppointmentsController {
     return this.appointmentsService.searchPatients(q);
   }
 
+  @AnyAuthenticated()
   @Get(':id')
   findOne(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.appointmentsService.findOne(user, BigInt(id));

@@ -34,15 +34,15 @@ const handleDialogOpenChange = (open: boolean) => {
   dialogVisible.value = open
 }
 const selectUploadFie = () => {
-  document.getElementById('inputFile').click()
+  document.getElementById('inputFile')?.click()
 }
 let file: any
-const getData = (e) => {
+const getData = (e: any) => {
   file = e.target.files[0]
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
-      previewImage.value = e.target.result
+      previewImage.value = e.target?.result as string
     }
     reader.readAsDataURL(file)
   }

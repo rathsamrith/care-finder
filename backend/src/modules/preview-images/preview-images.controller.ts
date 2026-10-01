@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import { Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { PreviewImagesService } from './preview-images.service';
@@ -18,6 +19,7 @@ import { validateDto } from '../../common/utils/validate-dto.util';
 // (enforced in PreviewImagesService).
 @Controller('preview-images')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AnyAuthenticated()
 export class PreviewImagesController {
   constructor(private readonly previewImagesService: PreviewImagesService) {}
 

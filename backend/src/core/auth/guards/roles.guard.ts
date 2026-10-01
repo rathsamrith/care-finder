@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ANY_AUTHENTICATED_KEY } from '../decorators/any-authenticated.decorator';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { AuthenticatedUser } from '../strategies/jwt-access.strategy';
@@ -19,13 +20,20 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    if (!requiredRoles?.length && !requiredPermissions?.length) {
-      return true;
-    }
+    const anyAuthenticated = this.reflector.getAllAndOverride<boolean>(
+      ANY_AUTHENTICATED_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     const user: AuthenticatedUser = context.switchToHttp().getRequest().user;
     if (!user) {
       throw new ForbiddenException('Not authenticated');
+    }
+
+    if (!requiredRoles?.length && !requiredPermissions?.length) {
+      if (anyAuthenticated) return true;
+      // Fail closed: a handler under RolesGuard must declare its policy.
+      throw new ForbiddenException('No access policy declared for this route');
     }
 
     const hasRole = requiredRoles?.some((role) => user.roles.includes(role));

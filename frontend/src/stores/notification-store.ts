@@ -2,9 +2,9 @@ import {defineStore} from "pinia";
 import axiosInstance from "@/plugins/axios";
 export const NotificationStore = defineStore("NotificationStore", {
     state:()=> ({
-        message:{},
-        notifications:[],
-        unseenNotifications:[]
+        message: {} as any,
+        notifications: [] as any[],
+        unseenNotifications: [] as any[]
     }),
     actions:{
         async fetchNotification() {

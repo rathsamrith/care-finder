@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import {
   Body,
   Controller,
@@ -24,6 +25,7 @@ import { AuthenticatedUser } from '../../core/auth/strategies/jwt-access.strateg
 // admin-readable through this resource).
 @Controller('user-addresses')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AnyAuthenticated()
 export class UserAddressesController {
   constructor(private readonly userAddressesService: UserAddressesService) {}
 
