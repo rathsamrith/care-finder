@@ -12,7 +12,7 @@
     "test:unit": "vitest",
     "build-only": "vite build",
     "build:preview": "vite build --mode preview",
-    "type-check": "vue-tsc --build --force",
+    "type-check": "vue-tsc --noEmit --composite false -p tsconfig.app.json && vue-tsc --noEmit --composite false -p tsconfig.node.json",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/"
   },
@@ -73,12 +73,12 @@
     "prettier": "^3.2.5",
     "tailwindcss": "^3.4.19",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "~5.4.0",
+    "typescript": "~5.9.0",
     "unocss": "^66.10.5",
     "vite": "^8.3.1",
     "vite-plugin-vue-devtools": "^8.2.1",
     "vitest": "^5.0.2",
-    "vue-tsc": "^2.0.11"
+    "vue-tsc": "^2.2.12"
   },
   "allowScripts": {
     "vue-demi@0.14.8": true,
