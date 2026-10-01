@@ -9,8 +9,8 @@ import { markRaw, onMounted, onUnmounted, shallowRef } from 'vue'
 import '@maptiler/sdk/dist/maptiler-sdk.css'
 import axiosInstance from '@/plugins/axios'
 const { t } = useI18n()
-const mapContainer = shallowRef(null)
-const map = shallowRef(null)
+const mapContainer = shallowRef<HTMLElement | null>(null)
+const map = shallowRef<any>(null)
 const { showDialog: showLocationDialog, ensureLocation, allow: allowLocation } = useLocationPermission()
 const coordinate = { lng: 0, lat: 0, acc: 0 }
 
@@ -40,7 +40,7 @@ onMounted(() => {
   const initialState = { lng: 104.888535, lat: 11.562108, zoom: 10 }
   map.value = markRaw(
     new Map({
-      container: mapContainer.value,
+      container: mapContainer.value as HTMLElement,
       style: MapStyle.STREETS,
       center: [initialState.lng, initialState.lat],
       zoom: initialState.zoom

@@ -2,9 +2,9 @@ import axiosInstance from '@/plugins/axios'
 import { defineStore } from 'pinia'
 export const hospitalDetailStore = defineStore('hospitalDetail', {
   state: () => ({
-    id: null,
-    hospitalDetail: {},
-    appointment:[]
+    id: null as string | number | null,
+    hospitalDetail: {} as any,
+    appointment: [] as any[]
   }),
   actions: {
     async fetchHospitalDetail(id: any) {

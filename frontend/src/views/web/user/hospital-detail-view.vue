@@ -170,7 +170,7 @@ const editForm = reactive({
   hospital_id: route.query.id,
   user_id: user.user.id,
   content: '',
-  star: ''
+  star: 0 as number
 })
 let feedBackreplies: any[] = []
 const outerVisible = ref(false)

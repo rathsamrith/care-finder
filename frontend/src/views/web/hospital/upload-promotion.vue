@@ -106,7 +106,7 @@ import { useAuthStore } from '@/stores/auth-store'
 
 const { t } = useI18n()
 const centerDialogVisible = ref(false)
-const fileInput = ref(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 const imageUrl = ref('')
 const userStore = useAuthStore()
 const form = ref({
@@ -135,7 +135,7 @@ const onAddItem = () => {
 }
 
 const triggerFileInput = () => {
-  fileInput.value.click()
+  fileInput.value?.click()
 }
 onMounted(() => {
   store.fetchPromotions()
@@ -143,7 +143,7 @@ onMounted(() => {
 
 const onFileChange = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
-  form.value.image = file
+  form.value.image = file as any
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {

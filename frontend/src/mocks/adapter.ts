@@ -10,7 +10,6 @@ import {
   categories,
   createSiteState,
   createTeamState,
-  departments,
   doctors,
   feedbacks,
   hospitalDetail,

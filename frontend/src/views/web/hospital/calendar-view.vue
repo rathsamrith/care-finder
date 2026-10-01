@@ -11,7 +11,7 @@
     <Card class="mt-4">
       <CardContent>
         <div class="cf-calendar">
-          <FullCalendar :options="fullCalendarOptions">
+          <FullCalendar :options="fullCalendarOptions as any">
             <template v-slot:eventContent="arg">
               <div class="flex items-center gap-1.5 overflow-hidden rounded-md bg-accent-tint px-1.5 py-0.5 text-[11px] leading-tight">
                 <span class="size-1.5 shrink-0 rounded-full" :class="statusDotClass(arg.event.extendedProps.status)" />
@@ -148,9 +148,7 @@ export default defineComponent({
       id: '',
       appointment: [],
       user: userStore,
-      currentAppointment: {
-        appointment_date: undefined
-      },
+      currentAppointment: {} as any,
       visibleMonth: undefined as number | undefined,
       visibleYear: undefined as number | undefined,
       calendarOptions: {

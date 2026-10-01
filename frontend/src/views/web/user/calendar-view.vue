@@ -70,9 +70,9 @@ export default defineComponent({
       outerVisible: ref(false),
       innerVisible: ref(false),
       dialogEditVisible: ref(false),
-      hospital: ref([]),
-      events: [],
-      docData: ref([]),
+      hospital: ref<any[]>([]),
+      events: [] as any[],
+      docData: ref<any[]>([]),
       hospital_id: '',
       form: reactive({
         first_name: userStore.user.first_name,
@@ -97,9 +97,7 @@ export default defineComponent({
       }),
       id: '',
       appointment: [],
-      currentAppointment: {
-        appointment_date: undefined
-      },
+      currentAppointment: {} as any,
       calendarOptions: {
         plugins: [
           dayGridPlugin,
@@ -242,13 +240,13 @@ export default defineComponent({
     fetchData() {
       this.events = store.calendars
     },
-    async cancelAppointment(id) {
+    async cancelAppointment(id: any) {
       this.outerVisible = false
       await store.cancelAppointment(id)
       open2(this.t('userCalendar.toastTitle'), this.t('userCalendar.canceled'), 'success')
       store.fetchCalendarData()
     },
-    removeAppointment(id) {
+    removeAppointment(id: any) {
       this.outerVisible = false
       store.removeAppointment(id)
       store.fetchAppointments()
@@ -262,7 +260,7 @@ export default defineComponent({
       <template #title>{{ t('userCalendar.heading') }}</template>
     </SectionHeading>
     <Card padding="p-4 sm:p-6" class="mt-6">
-      <FullCalendar :options="fullCalendarOptions">
+      <FullCalendar :options="fullCalendarOptions as any">
         <template v-slot:eventContent="arg">
           <div class="flex flex-col rounded-lg bg-accent px-2 py-1 text-white">
             <b class="text-xs">{{ arg.event.start.toLocaleTimeString() }}</b>

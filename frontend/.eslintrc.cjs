@@ -11,5 +11,11 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest'
-  }
+  },
+  rules: {
+    // shadcn-style UI primitives (Button, Dialog, tabs.vue...) and route views use single-word names.
+    'vue/multi-word-component-names': 'off',
+    'vue/no-reserved-component-names': 'off'
+  },
+  overrides: [{ files: ['tailwind.config.js'], env: { node: true } }]
 }

@@ -54,11 +54,11 @@ export default defineComponent({
   name: 'CardTopHospital',
   components: { SectionHeading, StarRating },
   methods: {
-    ratingText(value) {
+    ratingText(value: number) {
       const key = RATING_KEYS[Math.round(value) - 1]
       return key ? this.$t(`users.topHospitals.ratings.${key}`) : ''
     },
-    seeDetails(id) {
+    seeDetails(id: string | number) {
       this.$router.push(`/hospital/detail?id=${id}`)
       this.details.fetchHospitalDetail(id)
     }

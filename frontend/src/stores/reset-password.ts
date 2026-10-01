@@ -4,7 +4,7 @@ import { apiErrorMessage } from '@/lib/api-error'
 export const resetPasswordStore = defineStore('resetPassword',{
     state:()=> ({
         token:'',
-        message:{},
+        message: {} as { success?: boolean; message?: string },
         resetMessage:{} as { success?: boolean; message?: string }
     }),
     actions:{

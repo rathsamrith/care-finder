@@ -95,10 +95,10 @@ const removeDepartment = async (id: number) => {
     toast.error(apiErrorMessage(e, t('hospitalProfile.departmentRemoveFailed')))
   }
 }
-const removeService = (id: number) => {
+const removeService = (id: any) => {
   console.log('remove serve ', id)
 }
-const updateService = (id: number) => {
+const updateService = (id: any) => {
   console.log('updateService ', id)
 }
 const onNewDepFileChange = (event: Event) => {
@@ -194,8 +194,8 @@ const openEditForm = () => {
   submissionFrom.value.vision = details.hospitalDetail.vision
   submissionFrom.value.mission = details.hospitalDetail.mission
 }
-const categories = ref([])
-let formData = ref({})
+const categories = ref<any[]>([])
+const formData = ref<any>({})
 const fetchDetail = () => {
   details.fetchHospitalDetail(userStore.hospital.id)
   formData.value = details.hospitalDetail
