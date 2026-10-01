@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import { Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { DepartmentsService } from './departments.service';
@@ -18,6 +19,7 @@ import { validateDto } from '../../common/utils/validate-dto.util';
 // admin (enforced in DepartmentsService).
 @Controller('departments')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AnyAuthenticated()
 export class DepartmentsController {
   constructor(private readonly departmentsService: DepartmentsService) {}
 

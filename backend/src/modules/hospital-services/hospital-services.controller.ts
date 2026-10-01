@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import { Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { HospitalServicesService } from './hospital-services.service';
@@ -19,6 +20,7 @@ import { validateDto } from '../../common/utils/validate-dto.util';
 // create/update/delete are restricted to the owning hospital or an admin
 // (enforced in HospitalServicesService).
 @Controller('hospital-services')
+@AnyAuthenticated()
 export class HospitalServicesController {
   constructor(private readonly hospitalServicesService: HospitalServicesService) {}
 

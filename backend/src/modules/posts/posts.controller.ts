@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import {
   Body,
   Controller,
@@ -23,6 +24,7 @@ import { AuthenticatedUser } from '../../core/auth/strategies/jwt-access.strateg
 // original's `auth:sanctum` group.
 @Controller('posts')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AnyAuthenticated()
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 

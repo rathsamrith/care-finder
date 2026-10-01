@@ -1,3 +1,4 @@
+import { AnyAuthenticated } from '../../core/auth/decorators/any-authenticated.decorator';
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -13,6 +14,7 @@ import { AuthenticatedUser } from '../../core/auth/strategies/jwt-access.strateg
 // restricted to the owning hospital or an admin (enforced in RoomsService).
 @Controller('rooms')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@AnyAuthenticated()
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
